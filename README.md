@@ -56,7 +56,8 @@
   - [ ] obsługa GPIO
     - [ ] Guziki do wklikiwania orzeł/reszka
     - [ ] świecenie diodą gdy się kliknie, szybko jak się wygra i wolno jak się przegra
-  - [ ] Informowanie o starcie gry
+  - [ ] Transmisja - obsługa wszyskich headerów wysyłanych przez serwer oraz:
+    - [ ] sEquence(E) wysyłanie sekwencji do serwera
 
 ## Sprawko
 
