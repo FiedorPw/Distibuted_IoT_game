@@ -1,0 +1,60 @@
+# Compiled object files
+*.o
+*.out
+
+# Compiled dynamic libraries
+*.so
+*.dll
+*.dylib
+
+# Compiled static libraries
+*.a
+*.lib
+
+# Executable files
+*.exe
+*.out
+*.app
+*.bin
+
+# Debug files
+*.dSYM/
+*.stackdump
+
+# Logs and debugging artifacts
+*.log
+core
+debug.log
+
+# Temporary files and backups
+*~
+*.swp
+*.swo
+*.bak
+
+# IDEs and editors
+.vscode/
+.idea/
+*.code-workspace
+
+# MacOS system files
+.DS_Store
+
+# CMake files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+build/
+Makefile
+
+# Generated files from `make`
+*.d
+.dep
+
+# Coverage reports
+*.gcda
+*.gcno
+*.gcov
+
+# Other system files
+Thumbs.db
