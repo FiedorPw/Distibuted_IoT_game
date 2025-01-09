@@ -21,35 +21,37 @@
          3. how many times the game was played
          4. the probabilities of winning (estimate)
          5. the average number of tosses (estimate)
-      2. wyślij wiadomość z nowym bitem 
+      2. wyślij wiadomość z nowym bitem
       3. sprawdz czy ktoś nie wysłał informacji że wypadła jego sekwencja
 
    3. Zapisz wygrywającą sekwencje
 
-3. Policz jakie prawdopodobieństwo zwycięstwa miała wygrywająca sekwencja(wystarczy wziąć  srednią z wielu gier) 
+3. Policz jakie prawdopodobieństwo zwycięstwa miała wygrywająca sekwencja(wystarczy wziąć  srednią z wielu gier)
 
-   
+
 
 
 
 # TODO
 
 - [ ] Serwer
-  - [ ] VM na chmurze
-    - [ ] firewall
-    - [ ] instalacja systemu
+  - [x] VM na chmurze
+    - [x] firewall
+    - [x] instalacja systemu
   - [ ] Alogorytm
+    - [x] funkcja generująca sekwencje
+    - [x] funkcja decydująca zwycięsce
     - [ ] powtórzenie wiele razy(wyłonienie kto miał większą szanse na wygraną)
   - [ ] Transmisja
-    - [ ] Protokół 
+    - [ ] Protokół
       - [ ] Headery, odpowiadanie ack na każdą wiadomość
         - [ ] start (S)
-        - [ ] winner (W)  potem 0 - przegrałeś 1 - wygrałeś	
+        - [ ] winner (W)  potem 0 - przegrałeś 1 - wygrałeś
         - [ ] Register (R), id - rejestrowanie hosta z jego ip,portem i id
         - [ ] Game(G) - po nim kolejne bity oznaczjące wyrzuconą sekwencje
         - [ ] dodawanie ich do wychodzących połączeń
         - [ ] odejmownie od przychodzących i rodzielanie ich na tej podstawie
-      - [ ] Kodowanie bitowe orła reszki na 0 i 1 
+      - [ ] Kodowanie bitowe orła reszki na 0 i 1
       - [ ] Uniwersalny dla klienta i serwera mechanizm czekania na potwierdzenie odebrania informacji ACK
     - [ ] zwracanie po skończonej grze zwycięscy oraz ilości rzutów potrzebnych do rozstrzygnięcia gry
 - [ ] Klient
@@ -74,4 +76,3 @@
 4. estimates obtained for some sets of patterns
 1.probability of winning for each pattern
 2.average number of tosses
-
