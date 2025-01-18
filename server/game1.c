@@ -139,7 +139,7 @@ int main() {
     srand(time(NULL));
     seeded = 1;
 
-    start_game(5); // Start 5 games
+    start_game(10); // Start 5 games
 
     print_game_statistics();
 

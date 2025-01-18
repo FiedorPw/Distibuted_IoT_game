@@ -41,7 +41,7 @@
   - [ ] Alogorytm
     - [x] funkcja generująca sekwencje
     - [x] funkcja decydująca zwycięsce
-    - [ ] powtórzenie wiele razy(wyłonienie kto miał większą szanse na wygraną)
+    - [x] powtórzenie wiele razy(wyłonienie kto miał większą szanse na wygraną)
   - [ ] Transmisja
     - [ ] Protokół
       - [ ] Headery, odpowiadanie ack na każdą wiadomość
