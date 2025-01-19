@@ -5,10 +5,15 @@
 const char* ssid = "GreenNet1";
 const char* password = "niunia1234";
 
-// Ustawienia sieciowe
+// Chmurowy adres serwera
+IPAddress serverIp(34,0,240,164); // Adres IP serwera/
 unsigned int localPort = 1305;
-unsigned int serverPort = 1305;
-IPAddress serverIp(192, 168, 0, 208); // Adres IP serwera
+unsigned int serverPort = 1337;
+
+// Ustawienia sieciowe
+//unsigned int localPort = 1305;
+//unsigned int serverPort = 1305;
+//IPAddress serverIp(192, 168, 0, 208); // Adres IP serwera
 
 // Ustawienia protokołu
 const int sequenceLength = 4;
@@ -124,22 +129,22 @@ void loop() {
   if (sequenceEntered && gameStarted) {
       
       if (serverSequence.length() >= sequenceLength) {
-            String lastServerChars = serverSequence.substring(serverSequence.length() - sequenceLength);
-            if (lastServerChars.equals(userSequence)) {
-                Serial.println("Sekwencja serwera odpowiada sekwencji gracza!");
-                
-                // Wysyłanie oddzielnych wiadomości ACK i WINNER
-                //sendACK(serverIp, serverPort, GAME); // Wysyłanie ACK dla ostatniej odebranej wiadomości GAME
-                delay(100); // Dodanie krótkiego opóźnienia
-                sendWinnerMessage(serverIp, serverPort, '1');
-                
-                isWinner = true;
-                gameStarted = false;
-                serverSequence = ""; // Wyczyść sekwencję serwera tylko w przypadku wygranej
-            }
-            // Usunięto serverSequence = ""; w przypadku, gdy sekwencje się nie zgadzają
-        }
-    
+          String lastServerChars = serverSequence.substring(serverSequence.length() - sequenceLength);
+          if (lastServerChars.equals(userSequence)) {
+              Serial.println("Sekwencja serwera odpowiada sekwencji gracza!");
+              
+              // Wysyłanie oddzielnych wiadomości ACK i WINNER
+              //sendACK(serverIp, serverPort, GAME); // Wysyłanie ACK dla ostatniej odebranej wiadomości GAME
+              delay(100); // Dodanie krótkiego opóźnienia
+              sendWinnerMessage(serverIp, serverPort, '1');
+              
+              isWinner = true;
+              gameStarted = false;
+              serverSequence = ""; // Wyczyść sekwencję serwera tylko w przypadku wygranej
+          }
+          // Usunięto serverSequence = ""; w przypadku, gdy sekwencje się nie zgadzają
+      }
+  
   }
 
   delay(50);
@@ -160,7 +165,11 @@ void processPacket(char *packet, IPAddress remoteIP, unsigned int remotePort) {
         break;
     case WINNER:
         Serial.println("Odebrano WINNER");
-        // Nie rób nic, ta wiadomość jest przeznaczona tylko dla serwera
+        if (message[0] == '0') {
+          Serial.println("Przegrana, resetowanie stanu gry");
+          serverSequence = "";
+          gameStarted = false;
+        }
         break;
     case REGISTER:
         Serial.println("Odebrano REGISTER");
@@ -169,14 +178,14 @@ void processPacket(char *packet, IPAddress remoteIP, unsigned int remotePort) {
     case GAME:
         Serial.println("Odebrano GAME");
         if (gameStarted) {
-            if (strlen(message) > 0) {
-              serverSequence += message[0];
-            }
-            Serial.print("Aktualna sekwencja serwera: ");
-            Serial.println(serverSequence);
-            sendACK(remoteIP, remotePort, GAME);
+          if (strlen(message) > 0) {
+            serverSequence += message[0];
+          }
+          Serial.print("Aktualna sekwencja serwera: ");
+          Serial.println(serverSequence);
+          sendACK(remoteIP, remotePort, GAME);
         } else {
-            Serial.println("Odebrano GAME przed START, ignorowanie.");
+          Serial.println("Odebrano GAME przed START, ignorowanie.");
         }
         break;
     case ACK:
