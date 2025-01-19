@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-#define SERVER_PORT 1305
+#define SERVER_PORT 1337
 #define BUFFER_SIZE 255
 #define MAX_THROWS 100 // Maksymalna liczba rzutów w grze
 #define MAX_SEQUENCE_LENGTH (MAX_THROWS * 2) // Maksymalna długość sekwencji (uwzględniając przecinki)
@@ -135,8 +135,8 @@ void send_game_message_to_all(int server_socket) {
         }
     }
 
-    printf("Wysłano %s do wszystkich graczy. game.throws: %d, Sekwencja: %s\n", server_num, game.throws, game.current_sequence);
-    game.throws++;
+    game.throws++; // zmiana kolejnosci przed żeby printować rzeczywistą liczbe rzutów
+    printf("Wysłano %s do graczy. Rzuty: %d, Sekwencja: %s\n", server_num, game.throws, game.current_sequence);
     game.last_game_message_time = time(NULL);
 }
 
@@ -271,7 +271,7 @@ void handle_winner_message(int server_socket, char *message, struct sockaddr_in 
 
                 // Ponownie kopiujemy oryginalna sekwencje
                 strcpy(temp_winning_sequence, game.winning_sequence);
-                
+
                 // Przechodzimy do indeksu startowego
                 token = strtok(temp_winning_sequence, ",");
                 for (int j = 0; j < start_index; j++) {
