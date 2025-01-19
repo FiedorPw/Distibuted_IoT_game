@@ -28,51 +28,32 @@
 
 3. Policz jakie prawdopodobieństwo zwycięstwa miała wygrywająca sekwencja(wystarczy wziąć  srednią z wielu gier)
 
-
-
-
-
 # TODO
 
-- [ ] Serwer
+- [x] Serwer
   - [x] VM na chmurze
     - [x] firewall
     - [x] instalacja systemu
-  - [ ] Alogorytm
+  - [x] Alogorytm
     - [x] funkcja generująca sekwencje
     - [x] funkcja decydująca zwycięsce
     - [x] powtórzenie wiele razy(wyłonienie kto miał większą szanse na wygraną)
-  - [ ] Transmisja
-    - [ ] Protokół
-      - [ ] Headery, odpowiadanie ack na każdą wiadomość
-        - [ ] start (S)
-        - [ ] winner (W)  potem 0 - przegrałeś 1 - wygrałeś
-        - [ ] Register (R), id - rejestrowanie hosta z jego ip,portem i id
-        - [ ] Game(G) - po nim kolejne bity oznaczjące wyrzuconą sekwencje
-        - [ ] dodawanie ich do wychodzących połączeń
-        - [ ] odejmownie od przychodzących i rodzielanie ich na tej podstawie
-      - [ ] Kodowanie bitowe orła reszki na 0 i 1
-      - [ ] Uniwersalny dla klienta i serwera mechanizm czekania na potwierdzenie odebrania informacji ACK
-    - [ ] zwracanie po skończonej grze zwycięscy oraz ilości rzutów potrzebnych do rozstrzygnięcia gry
-- [ ] Klient
-  - [ ] obsługa GPIO
-    - [ ] Guziki do wklikiwania orzeł/reszka
-    - [ ] świecenie diodą gdy się kliknie, szybko jak się wygra i wolno jak się przegra
-  - [ ] Transmisja - obsługa wszyskich headerów wysyłanych przez serwer oraz:
-    - [ ] sEquence(E) wysyłanie sekwencji do serwera
+  - [x] Transmisja
+    - [x] Protokół
+      - [x] Headery, odpowiadanie ack na każdą wiadomość
+        - [x] start (S)
+        - [x] winner (W)  potem 0 - przegrałeś 1 - wygrałeś
+        - [x] Register (R), id - rejestrowanie hosta z jego ip,portem i id
+        - [x] Game(G) - po nim kolejne bity oznaczjące wyrzuconą sekwencje
+        - [x] dodawanie ich do wychodzących połączeń
+        - [x] odejmownie od przychodzących i rodzielanie ich na tej podstawie
+      - [x] Kodowanie bitowe orła reszki na 0 i 1
+      - [x] Uniwersalny dla klienta i serwera mechanizm czekania na potwierdzenie odebrania informacji ACK
+    - [x] zwracanie po skończonej grze zwycięscy oraz ilości rzutów potrzebnych do rozstrzygnięcia gry
+- [x] Klient
+  - [x] obsługa GPIO
+    - [x] Guziki do wklikiwania orzeł/reszka
+    - [x] świecenie diodą gdy się kliknie, 3 razy wygra 
+  - [x] Transmisja - obsługa wszyskich headerów wysyłanych przez serwer oraz:
+    - [x] sEquence(E) wysyłanie sekwencji do serwera
 
-## Sprawko
-
-1. a specification of your ALP
-▪ produce message formats and binary encodings for the protocol messages
-• when specifying message formats, follow a good example, e.g., RTP or IP
-▪ produce sequence diagrams (see the UML language to learn about sequence diagrams)
-▪ describe how you deal with the fact that UDP is unreliable
-2. a description of your server implementation
-▪ components (overview of the server architecture)
-▪ major data structures
-3. a description of your node implementation
-▪ include a description of your environment files
-4. estimates obtained for some sets of patterns
-1.probability of winning for each pattern
-2.average number of tosses
