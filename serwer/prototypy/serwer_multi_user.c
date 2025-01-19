@@ -49,13 +49,12 @@ typedef struct {
 
 // Zmienne globalne
 static int seeded = 0;
-int server_id;
 GameInfo game;
 
 // Funkcja generująca losową liczbę 0 lub 1
 int get_random_number() {
     if (!seeded) {
-        srand(time(NULL) + server_id);
+        srand(time(NULL));
         seeded = 1;
     }
     return rand() % 2;
@@ -302,14 +301,12 @@ void handle_winner_message(int server_socket, char *message, struct sockaddr_in 
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
-        printf("Użycie: %s <id_serwera> <liczba_graczy> <liczba_gier>\n", argv[0]);
+    if (argc != 3) {
+        printf("Użycie: %s <liczba_graczy> <liczba_gier>\n", argv[0]);
         return 1;
     }
-
-    server_id = atoi(argv[1]);
-    game.num_players = atoi(argv[2]);
-    game.total_games = atoi(argv[3]);
+    game.num_players = atoi(argv[1]);
+    game.total_games = atoi(argv[2]);
 
     game.players = malloc(game.num_players * sizeof(ClientInfo));
     if (game.players == NULL) {
@@ -331,7 +328,7 @@ int main(int argc, char *argv[]) {
     memset(game.current_sequence, 0, sizeof(game.current_sequence));
     memset(game.winning_sequence, 0, sizeof(game.winning_sequence));
 
-    printf("Uruchamianie serwera z ID %d, liczba graczy: %d, liczba gier: %d\n", server_id, game.num_players, game.total_games);
+    printf("Uruchamianie serwera z ID %d, liczba graczy: %d, liczba gier: %d\n", game.num_players, game.total_games);
 
     int server_socket;
 struct sockaddr_in server_addr;

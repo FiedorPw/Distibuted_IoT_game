@@ -3,7 +3,7 @@
 
 // Chmurowy adres serwera
 IPAddress serverIp(34,0,240,164); // Adres IP serwera/
-unsigned int localPort = 1305;
+unsigned int localPort = 1337;
 unsigned int serverPort = 1337;
 
 // Dane logowania do sieci Wi-Fi

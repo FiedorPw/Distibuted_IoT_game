@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-#define SERVER_PORT 1337 // port chmurowy
+#define SERVER_PORT 1337
 #define BUFFER_SIZE 255
 #define MAX_THROWS 100 // Maksymalna liczba rzutów w grze
 #define MAX_SEQUENCE_LENGTH (MAX_THROWS * 2) // Maksymalna długość sekwencji (uwzględniając przecinki)
@@ -58,14 +58,13 @@ typedef struct {
 
 // Zmienne globalne
 // static int seeded = 0; // Przeniesiona do funkcji get_random_number
-int server_id;
 GameInfo game;
 
 // Funkcja generująca losową liczbę 0 lub 1
 int get_random_number() {
     static int seeded = 0; // Teraz zmienna statyczna lokalna
     if (!seeded) {
-        srand(time(NULL) + server_id);
+        srand(time(NULL));
         seeded = 1;
     }
     return rand() % 2;
@@ -318,7 +317,7 @@ void handle_winner_message(int server_socket, char *buffer, struct sockaddr_in *
 
                 // Ponownie kopiujemy oryginalna sekwencje
                 strcpy(temp_winning_sequence, game.winning_sequence);
-                
+
                 // Przechodzimy do indeksu startowego
                 token = strtok(temp_winning_sequence, ",");
                 for (int j = 0; j < start_index; j++) {
@@ -349,14 +348,13 @@ void handle_winner_message(int server_socket, char *buffer, struct sockaddr_in *
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
-        printf("Użycie: %s <id_serwera> <liczba_graczy> <liczba_gier>\n", argv[0]);
+    if (argc != 3) {
+        printf("Użycie: %s <liczba_graczy> <liczba_gier>\n", argv[0]);
         return 1;
     }
 
-    server_id = atoi(argv[1]);
-    game.num_players = atoi(argv[2]);
-    game.total_games = atoi(argv[3]);
+    game.num_players = atoi(argv[1]);
+    game.total_games = atoi(argv[2]);
 
     game.players = (ClientInfo *)malloc(game.num_players * sizeof(ClientInfo));
     if (game.players == NULL) {
@@ -378,7 +376,7 @@ int main(int argc, char *argv[]) {
     memset(game.current_sequence, 0, sizeof(game.current_sequence));
     memset(game.winning_sequence, 0, sizeof(game.winning_sequence));
 
-    printf("Uruchamianie serwera z ID %d, liczba graczy: %d, liczba gier: %d\n", server_id, game.num_players, game.total_games);
+    printf("Uruchamianie serwera z ID %d, liczba graczy: %d, liczba gier: %d\n", game.num_players, game.total_games);
 
     int server_socket;
     struct sockaddr_in server_addr;
@@ -456,7 +454,7 @@ int main(int argc, char *argv[]) {
                         } else {
                              printf("Nieprawidłowa długość wiadomości WINNER.\n");
                         }
-                        
+
                         break;
                     default:
                         printf("Nieznany nagłówek: 0x%02X\n", header);
@@ -482,5 +480,3 @@ int main(int argc, char *argv[]) {
     close(server_socket);
     return 0;
 }
-
-
