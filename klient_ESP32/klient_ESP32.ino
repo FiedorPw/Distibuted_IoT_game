@@ -1,15 +1,14 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
-// Dane logowania do sieci Wi-Fi
-const char* ssid = "GreenNet1";
-const char* password = "niunia1234";
-
-// Ustawienia sieciowe
+// Chmurowy adres serwera
+IPAddress serverIp(34,0,240,164); // Adres IP serwera/
 unsigned int localPort = 1305;
-unsigned int serverPort = 1305;
-//IPAddress serverIp(34, 0, 240, 164); // Adres IP serwera w chmurze
-IPAddress serverIp(192, 168, 0, 208); // Adres IP serwera
+unsigned int serverPort = 1337;
+
+// Dane logowania do sieci Wi-Fi
+const char* ssid = "2.4GHz_CyberNet";
+const char* password = "ortogonalnosc";
 
 // Ustawienia protokołu
 #define SEQUENCE_LENGTH 4
@@ -49,12 +48,18 @@ WiFiUDP Udp;
 // Id hosta
 int hostId = 1;
 
+// Inicjalizacja builin diody
+int ledPin = 2;
+
 void setup() {
   // Inicjalizacja komunikacji szeregowej
   Serial.begin(115200);
 
+  // Inicjalizacja builin diody 
+  pinMode(ledPin, OUTPUT);
+
   // Łączenie z siecią Wi-Fi
-  Serial.print("Łączenie z ");
+  Serial.print("\n\nŁączenie z ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
 
@@ -89,14 +94,14 @@ void setup() {
         userSequence += "1";
         Serial.println("Dodano: 1");
       }
-      signalInput();
+      flash_diode();
     }
     lastButtonState = buttonState;
   }
 
   // Po zakończeniu wprowadzania sekwencji
   if (userSequence.length() == SEQUENCE_LENGTH) {
-    Serial.print("Wprowadzona sekwencja: ");
+    Serial.print("\nWprowadzona sekwencja: ");
     Serial.println(userSequence);
     Serial.println("Sekwencja została ustawiona.");
     sequenceEntered = true;
@@ -109,10 +114,11 @@ void setup() {
 void loop() {
   // Odbieranie pakietów
   int packetSize = Udp.parsePacket();
+  
   if (packetSize) {
-    Serial.print("Odebrano pakiet o rozmiarze ");
-    Serial.println(packetSize);
-    Serial.print("Od ");
+    Serial.print("\nOdebrano pakiet o rozmiarze ");
+    Serial.print(packetSize);
+    Serial.print(" Od ");
     IPAddress remote = Udp.remoteIP();
     for (int i = 0; i < 4; i++) {
       Serial.print(remote[i], DEC);
@@ -120,7 +126,7 @@ void loop() {
         Serial.print(".");
       }
     }
-    Serial.print(", port ");
+    Serial.print(":");
     Serial.println(Udp.remotePort());
 
     // Odczytanie danych z pakietu
@@ -140,7 +146,8 @@ void loop() {
         if (serverSequence.length() >= SEQUENCE_LENGTH) {
             String lastServerChars = serverSequence.substring(serverSequence.length() - SEQUENCE_LENGTH);
             if (lastServerChars.equals(userSequence)) {
-                Serial.println("Sekwencja serwera odpowiada sekwencji gracza!");
+                Serial.println("\n\nSekwencja serwera odpowiada sekwencji gracza - wygrałeś!!!");
+                flash_diode_multiple(3);
                 
                 // Wysyłanie wiadomości WINNER
                 sendWinnerMessage(serverIp, serverPort, WIN_RESULT);
@@ -150,6 +157,7 @@ void loop() {
                 serverSequence = ""; // Wyczyść sekwencję serwera tylko w przypadku wygranej
             }
         }
+
   }
 
   delay(50);
@@ -163,44 +171,44 @@ void processPacket(char *packet, IPAddress remoteIP, unsigned int remotePort) {
 
     uint8_t header = packet[0];
     Serial.print("Odebrano nagłówek: 0x");
-    Serial.println(header, HEX);
-    Serial.print(", Dane: 0x");  // Dodaj tę linię
-    Serial.println(packet[1], HEX); // Dodaj tę linię
+    Serial.print(header, HEX);
+    Serial.print(", Dane: 0x");  
+    Serial.print(packet[1], HEX); 
 
 
     switch (header) {
         case START_HEADER:
-            Serial.println("Odebrano START");
+            Serial.println(" - START");
             gameStarted = true;
             sendACK(remoteIP, remotePort, START_HEADER);
             break;
         case WINNER_HEADER:
-            Serial.println("Odebrano WINNER");
+            Serial.print(" - WINNER, ");
             if (packet[1] == LOSE_RESULT) {
-                Serial.println("Resetowanie stanu gry");
+            Serial.println(" resetowanie stanu gry");
                 serverSequence = "";
                 gameStarted = false;
             }
             break;
         case REGISTER_HEADER:
-            Serial.println("Odebrano REGISTER");
+            Serial.println("Odebrano REGISTER - ignorowanie");
             sendACK(remoteIP, remotePort, REGISTER_HEADER);
             break;
         case GAME_HEADER:
-    Serial.println("Odebrano GAME");
-    if (gameStarted) {
-        char result = (packet[1] == TAILS) ? '1' : '0';
-        serverSequence += result; // Poprawiona linijka - usunięto niepotrzebny warunek
-        Serial.print("Aktualna sekwencja serwera: ");
-        Serial.println(serverSequence);
-        sendACK(remoteIP, remotePort, GAME_HEADER);
-    } else {
-        Serial.println("Odebrano GAME przed START, ignorowanie.");
-    }
-    break;
-        case ACK_SERVER_HEADER:
-            Serial.println("Odebrano ACK");
+            Serial.println(" - GAME(update)");
+            if (gameStarted) {
+                char result = (packet[1] == TAILS) ? '1' : '0';
+                serverSequence += result; // Poprawiona linijka - usunięto niepotrzebny warunek
+                Serial.print("Aktualna sekwencja serwera: ");
+                Serial.println(serverSequence);
+                sendACK(remoteIP, remotePort, GAME_HEADER);
+            } else {
+                Serial.println("Odebrano GAME przed START, ignorowanie.");
+            }
             break;
+                case ACK_SERVER_HEADER:
+                    Serial.print("\nOdebrano ACK dla: ");
+                    break;
         default:
             Serial.println("Nieznany nagłówek");
     }
@@ -240,21 +248,26 @@ void sendRegistrationInfo() {
   Udp.write(buffer, sizeof(buffer));
   Udp.endPacket();
 
-  Serial.print("Wysłano informacje rejestracyjne do serwera. ID: ");
-  Serial.print(hostId);
-  Serial.print(", IP: ");
-  Serial.print(WiFi.localIP());
-  Serial.print(", Port: ");
-  Serial.println(localPort);
+  Serial.print("Wysłano prośbę o zarejestrowanie do serwera: ");
+  for (size_t i = 0; i < sizeof(buffer); i++) {
+      Serial.print("0x");
+      Serial.print(buffer[i], HEX); // Print in hexb
+      Serial.print(" ");
+  }
+  Serial.println();
 }
 
-void signalInput() {
-  int ledPin = 2;
-  pinMode(ledPin, OUTPUT);
+void flash_diode() {
   digitalWrite(ledPin, HIGH);
   delay(100);
   digitalWrite(ledPin, LOW);
   delay(100);
+}
+
+void flash_diode_multiple(int times_flash) {
+  for (int i = 0; i < times_flash; i++) {
+    flash_diode();
+  }
 }
 
 void sendWinnerMessage(IPAddress remoteIP, unsigned int remotePort, uint8_t result) {
