@@ -1,4 +1,4 @@
-#include "includes.h"
+serwer/game.c serwer/game1.c#include "includes.h"
 #include <stdint.h>
 #include <stdio.h>
 

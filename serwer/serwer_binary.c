@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-#define SERVER_PORT 1305
+#define SERVER_PORT 1337 // port chmurowy
 #define BUFFER_SIZE 255
 #define MAX_THROWS 100 // Maksymalna liczba rzutów w grze
 #define MAX_SEQUENCE_LENGTH (MAX_THROWS * 2) // Maksymalna długość sekwencji (uwzględniając przecinki)
