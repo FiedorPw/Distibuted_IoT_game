@@ -20,6 +20,8 @@ void print_game_statistics();
 void generate_server_sequence();
 void handle_register(int sock, struct sockaddr_in *client_addr, socklen_t addr_len);
 void handle_game(int sock, struct sockaddr_in *client_addr, socklen_t addr_len, const char *message);
+void send_start(int sock, struct sockaddr_in *client_addr, socklen_t addr_len);
+void handle_end_game(int sock, struct sockaddr_in *client_addr, socklen_t addr_len);
 
 // Zmienna globalna
 int game_active = 0;  // Określa, czy gra jest aktywna
@@ -36,21 +38,18 @@ void send_ack(int sock, struct sockaddr_in *client_addr, socklen_t addr_len, cha
     printf("ACK sent for %c.\n", header);
 }
 
-// Funkcja do znalezienia pozycji subsekwencji w sekwencji
-int find_sequence_position(const char *sequence, const char *subsequence) {
-    char *pos = strstr(sequence, subsequence);
-    return pos ? (int)(pos - sequence) : -1;
+// Funkcja do wysyłania komunikatu startowego 'S'
+void send_start(int sock, struct sockaddr_in *client_addr, socklen_t addr_len) {
+    char start_msg[2] = {'S', '\0'};  // Nagłówek 'S' dla rozpoczęcia gry
+    sendto(sock, start_msg, strlen(start_msg), 0, (struct sockaddr *)client_addr, addr_len);
+    printf("Start message sent (S).\n");
 }
 
-// Funkcja do obsługi rejestracji
-void handle_register(int sock, struct sockaddr_in *client_addr, socklen_t addr_len) {
-    printf("Handling REGISTER request.\n");
-
-    send_ack(sock, client_addr, addr_len, 'R');
-
-    generate_server_sequence();
-    game_active = 1;
-    printf("Game activated. Waiting for client sequences.\n");
+// Funkcja do zakończenia gry
+void handle_end_game(int sock, struct sockaddr_in *client_addr, socklen_t addr_len) {
+    game_active = 0;
+    send_ack(sock, client_addr, addr_len, 'G');  // Potwierdzenie zakończenia gry
+    printf("Game ended.\n");
 }
 
 // Funkcja do generowania sekwencji serwera
@@ -60,6 +59,26 @@ void generate_server_sequence() {
     }
     server_sequence[GAME_LEN] = '\0';
     printf("Generated server sequence: %s\n", server_sequence);
+}
+
+// Funkcja do obsługi rejestracji
+void handle_register(int sock, struct sockaddr_in *client_addr, socklen_t addr_len) {
+    printf("Handling REGISTER request.\n");
+
+    send_ack(sock, client_addr, addr_len, 'R');
+    
+    // Po rejestracji wysyłamy komunikat startowy
+    send_start(sock, client_addr, addr_len);
+    
+    generate_server_sequence();
+    game_active = 1;
+    printf("Game activated. Waiting for client sequences.\n");
+}
+
+// Funkcja do znalezienia pozycji subsekwencji w sekwencji
+int find_sequence_position(const char *sequence, const char *subsequence) {
+    char *pos = strstr(sequence, subsequence);
+    return pos ? (int)(pos - sequence) : -1;
 }
 
 // Funkcja do obsługi gry
@@ -93,20 +112,24 @@ void handle_game(int sock, struct sockaddr_in *client_addr, socklen_t addr_len, 
         strncpy(winner_msg + 1, sequence1, GAME_LEN);
         winner_msg[GAME_LEN + 1] = '\0';
         sendto(sock, winner_msg, strlen(winner_msg), 0, (struct sockaddr *)client_addr, addr_len);
-        game_active = 0;
+        a_wins++;
+        games_played++;
+        total_tosses += GAME_LEN;
+        handle_end_game(sock, client_addr, addr_len);
     } else {
         printf("Sequence %s appears first. Client wins with %s.\n", sequence2, sequence2);
         char winner_msg[GAME_LEN + 2] = {'W', '\0'};
         strncpy(winner_msg + 1, sequence2, GAME_LEN);
         winner_msg[GAME_LEN + 1] = '\0';
         sendto(sock, winner_msg, strlen(winner_msg), 0, (struct sockaddr *)client_addr, addr_len);
-        game_active = 0;
+        b_wins++;
+        games_played++;
+        total_tosses += GAME_LEN;
+        handle_end_game(sock, client_addr, addr_len);
     }
-
-    send_ack(sock, client_addr, addr_len, 'G');
 }
 
-// Funkcja przetwarzająca pakiety
+// Funkcja do przetwarzania pakietów
 void process_packet(int sock, struct sockaddr_in *client_addr, socklen_t addr_len, char *buffer) {
     char header = buffer[0];
     char *message = buffer + 1;
@@ -124,6 +147,9 @@ void process_packet(int sock, struct sockaddr_in *client_addr, socklen_t addr_le
             break;
         case 'W':
             printf("Received WINNER message\n");
+            break;
+        case 'S':
+            printf("Received START message (S)\n");
             break;
         default:
             printf("Unknown packet type: %c\n", header);
@@ -226,17 +252,15 @@ int main() {
 
     printf("Server is running and listening on port 1305.\n");
 
-    // Główna pętla odbierająca i przetwarzająca pakiety
+    // Główna pętla odbierająca i przetwarzająca wiadomości
     while (1) {
-        int recv_len = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr *)&client_addr, &addr_len);
-        if (recv_len < 0) {
-            perror("recvfrom failed");
+        ssize_t len = recvfrom(sock, buffer, sizeof(buffer), 0, (struct sockaddr *)&client_addr, &addr_len);
+        if (len < 0) {
+            perror("Error receiving data");
             continue;
         }
 
-        buffer[recv_len] = '\0';
-        printf("Received packet: %s\n", buffer);
-
+        buffer[len] = '\0';
         process_packet(sock, &client_addr, addr_len, buffer);
     }
 
